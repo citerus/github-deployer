@@ -1,0 +1,32 @@
+{
+  "hook": {
+    "active": true,
+    "app_id": 456,
+    "config": {
+      "content_type": "",
+      "insecure_ssl": "",
+      "secret": "",
+      "url": "example.com"
+    },
+    "created_at": "2024-03-01T21:10:43.728+00:00",
+    "deliveries_url": "localhost:7070",
+    "events": [],
+    "id": 789,
+    "last_response": {
+      "code": 202,
+      "status": "Accepted",
+      "message": "Accepted"
+    },
+    "name": "test-hook",
+    "ping_url": "localhost:7070/webhook",
+    "test_url": "localhost:7070/webhook",
+    "type": "something",
+    "updated_at": "2024-03-01T21:10:43.728+00:00",
+    "url": "example.com"
+  },
+  "hook_id": 123,
+  "organization": "github",
+  "repository": "octocat",
+  "sender": "github",
+  "zen": "foobarbaz"
+}

@@ -1,8 +1,9 @@
-package se.citerus;
+package se.citerus.clients;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.citerus.model.DeploymentStatus;
 
 import java.io.IOException;
 import java.net.URI;
@@ -26,14 +27,15 @@ public class GithubRestClient {
     }
 
     public void updateDeploymentStatus(DeploymentStatus status, String description, int deploymentId) {
+        LOG.info("Updating deployment status for {}/{} in env {}: {} {} {}", owner, repo, environment, status.name(), description, deploymentId);
         try (HttpClient client = HttpClient.newHttpClient()) {
             String body = new ObjectMapper().writeValueAsString(Map.of(
-                    "status", status.name(),
+                    "state", status.name(),
                     "description", description,
                     "environment", environment
             ));
             HttpResponse<String> response = client.send(HttpRequest.newBuilder()
-                    .headers("Accept: application/vnd.github+json", "X-GitHub-Api-Version: 2022-11-28", "Authorization: Bearer %s".formatted(token))
+                    .headers("Accept", "application/vnd.github+json", "X-GitHub-Api-Version", "2022-11-28", "Authorization", "Bearer %s".formatted(token))
                     .uri(URI.create("https://api.github.com/repos/%s/%s/deployments/%s/statuses".formatted(owner, repo, deploymentId)))
                     .POST(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString());
             LOG.info("Deployment status update response: {}", response.statusCode());

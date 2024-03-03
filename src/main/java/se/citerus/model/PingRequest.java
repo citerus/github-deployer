@@ -1,8 +1,9 @@
-package se.citerus;
+package se.citerus.model;
 
 import java.util.List;
+import java.util.Map;
 
-public record PingRequest(Hook hook, int hook_id, String organization, String repository, String sender, String zen) {
+public record PingRequest(Hook hook, int hook_id, Map<String, ?> organization, Map<String, ?> repository, Map<String, ?> sender, String zen) {
 }
 
 record Hook(boolean active, Integer app_id, HookConfig config, String created_at, String deliveries_url,

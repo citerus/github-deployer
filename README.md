@@ -23,4 +23,6 @@ githubRepository=jsp-tomcat-maven-example
 githubToken=XYZ
 # The port the deployer should use to receive webhooks.
 port=7070
+# The absolute file path of the script to run when making deployments.
+deploymentScriptPath=/home/admin/example-deploy-script.sh
 ```
