@@ -1,0 +1,9 @@
+<config>
+    <githubSignature>example-value</githubSignature>
+    <githubEnvironment>example-value</githubEnvironment>
+    <githubOwner>example-value</githubOwner>
+    <githubRepository>example-value</githubRepository>
+    <githubToken>example-value</githubToken>
+    <port>1337</port>
+    <deploymentScriptPath>example-value</deploymentScriptPath>
+</config>

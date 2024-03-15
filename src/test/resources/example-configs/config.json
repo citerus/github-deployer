@@ -1,0 +1,9 @@
+{
+  "githubSignature": "example-value",
+  "githubEnvironment": "example-value",
+  "githubOwner": "example-value",
+  "githubRepository": "example-value",
+  "githubToken": "example-value",
+  "port": 1337,
+  "deploymentScriptPath": "example-value"
+}

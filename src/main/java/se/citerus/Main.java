@@ -1,38 +1,26 @@
 package se.citerus;
 
 import io.javalin.Javalin;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
-import org.eclipse.jetty.util.StringUtil;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.JSONConfiguration;
+import org.apache.commons.configuration2.MapConfiguration;
+import org.apache.commons.configuration2.YAMLConfiguration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.citerus.clients.GithubRestClient;
-import se.citerus.model.DeploymentRequest;
-import se.citerus.model.DeploymentStatus;
-import se.citerus.model.PingRequest;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class Main {
 
@@ -40,17 +28,15 @@ public class Main {
     private static final String HMAC_SHA_256 = "HmacSHA256";
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeyException {
-        // TODO move config handling to separate class and implement yaml and json support
         Optional<String> configFilePath = args.length > 0 && args[0] != null ? Optional.of(args[0]) : Optional.empty();
-        Properties props = new Properties();
-        props.load(Files.newInputStream(Path.of(configFilePath.orElse("./configuration.properties"))));
-        String githubToken = Objects.requireNonNull(props.getProperty("githubToken"), "Missing required config property githubToken.");
-        String githubEnvironment = Objects.requireNonNull(props.getProperty("githubEnvironment"), "Missing required config property githubEnvironment.");
-        String githubOwner = Objects.requireNonNull(props.getProperty("githubOwner"), "Missing required config property githubOwner.");
-        String githubRepository = Objects.requireNonNull(props.getProperty("githubRepository"), "Missing required config property githubRepository.");
-        String githubSignature = Objects.requireNonNull(props.getProperty("githubSignature"), "Missing required config property githubSignature.");
-        String deploymentScriptPath = Objects.requireNonNull(props.getProperty("deploymentScriptPath"), "Missing required config property deploymentScriptPath.");
-        int port = Integer.parseInt(props.getProperty("port", "7070"));
+        Configuration props = parseConfigFile(configFilePath);
+        String githubToken = Objects.requireNonNull(props.getString("githubToken"), "Missing required config property githubToken.");
+        String githubEnvironment = Objects.requireNonNull(props.getString("githubEnvironment"), "Missing required config property githubEnvironment.");
+        String githubOwner = Objects.requireNonNull(props.getString("githubOwner"), "Missing required config property githubOwner.");
+        String githubRepository = Objects.requireNonNull(props.getString("githubRepository"), "Missing required config property githubRepository.");
+        String githubSignature = Objects.requireNonNull(props.getString("githubSignature"), "Missing required config property githubSignature.");
+        String deploymentScriptPath = Objects.requireNonNull(props.getString("deploymentScriptPath"), "Missing required config property deploymentScriptPath.");
+        int port = props.getInt("port", 7070);
         Mac hmac = Mac.getInstance(HMAC_SHA_256);
         hmac.init(new SecretKeySpec(githubSignature.getBytes(), HMAC_SHA_256));
 
@@ -60,5 +46,56 @@ public class Main {
                 .post("/webhook", new WebhookHandler(ghClient, githubEnvironment, deploymentScriptPath, hmac))
                 .get("/logs/{deploymentId}", new LogsHandler())
                 .start(port);
+    }
+
+    @NotNull
+    protected static Configuration parseConfigFile(Optional<String> configFilePath) throws IOException {
+        try {
+            Configuration config;
+            Configurations configs = new Configurations();
+            if (configFilePath.isPresent()) {
+                String filePath = configFilePath.get();
+                switch (extractFileExtension(filePath)) {
+                    case ".json" -> {
+                        JSONConfiguration jsonConfiguration = new JSONConfiguration();
+                        jsonConfiguration.read(Files.newInputStream(Path.of(filePath)));
+                        config = jsonConfiguration;
+                    }
+                    case ".yml", ".yaml" -> {
+                        YAMLConfiguration yamlConfiguration = new YAMLConfiguration();
+                        yamlConfiguration.read(Files.newInputStream(Path.of(filePath)));
+                        config = yamlConfiguration;
+                    }
+                    case ".xml" -> config = configs.xml(filePath);
+                    default -> config = configs.properties(filePath);
+                }
+            } else if (Files.exists(Path.of("configuration.properties"))) {
+                config = configs.properties(new File("configuration.properties"));
+            } else if (Files.exists(Path.of("configuration.json"))) {
+                JSONConfiguration jsonConfiguration = new JSONConfiguration();
+                jsonConfiguration.read(Files.newInputStream(Path.of("configuration.json")));
+                config = jsonConfiguration;
+            } else if (Files.exists(Path.of("configuration.yml"))) {
+                YAMLConfiguration yamlConfiguration = new YAMLConfiguration();
+                yamlConfiguration.read(Files.newInputStream(Path.of("configuration.yml")));
+                config = yamlConfiguration;
+            } else if (Files.exists(Path.of("configuration.xml"))) {
+                config = configs.xml("configuration.xml");
+            } else {
+                LOG.error("Unknown config file format: {}", configFilePath.orElse("missing"));
+                throw new IllegalArgumentException("Unknown config file format: %s".formatted(configFilePath.orElse("missing")));
+            }
+            return config;
+        } catch (ConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static String extractFileExtension(String configFilePath) {
+        String substring = configFilePath.substring(configFilePath.lastIndexOf("."));
+        if (substring.isEmpty()) {
+            throw new IllegalArgumentException("Config file path is missing a file extension: %s".formatted(configFilePath));
+        }
+        return substring;
     }
 }
