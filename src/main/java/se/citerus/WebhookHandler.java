@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.citerus.clients.GithubRestClient;
+import se.citerus.config.AppConfig;
 import se.citerus.model.DeploymentRequest;
 import se.citerus.model.DeploymentStatus;
 import se.citerus.model.PingRequest;
@@ -31,11 +32,11 @@ class WebhookHandler implements Handler {
     private static int deploymentId;
     private static final String HEXES = "0123456789abcdef";
 
-    public WebhookHandler(GithubRestClient ghClient, String githubEnvironment, String deploymentScriptPath, Mac hmac) {
+    public WebhookHandler(GithubRestClient ghClient, AppConfig config) {
         this.ghClient = ghClient;
-        this.githubEnvironment = githubEnvironment;
-        this.deploymentScriptPath = deploymentScriptPath;
-        this.hmac = hmac;
+        this.githubEnvironment = config.githubEnvironment;
+        this.deploymentScriptPath = config.deploymentScriptPath;
+        this.hmac = config.hmac;
     }
 
     @Override

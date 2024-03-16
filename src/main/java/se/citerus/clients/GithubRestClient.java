@@ -3,6 +3,7 @@ package se.citerus.clients;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.citerus.config.AppConfig;
 import se.citerus.model.DeploymentStatus;
 
 import java.io.IOException;
@@ -19,11 +20,11 @@ public class GithubRestClient {
     private final String owner;
     private final String repo;
 
-    public GithubRestClient(String token, String environment, String owner, String repo) {
-        this.token = token;
-        this.environment = environment;
-        this.owner = owner;
-        this.repo = repo;
+    public GithubRestClient(AppConfig config) {
+        this.token = config.githubToken;
+        this.environment = config.githubEnvironment;
+        this.owner = config.githubOwner;
+        this.repo = config.githubRepository;
     }
 
     public void updateDeploymentStatus(DeploymentStatus status, String description, int deploymentId) {
