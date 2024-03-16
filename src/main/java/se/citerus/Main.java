@@ -3,24 +3,24 @@ package se.citerus;
 import io.javalin.Javalin;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.JSONConfiguration;
-import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.citerus.clients.GithubRestClient;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
 
 public class Main {
 
@@ -55,7 +55,8 @@ public class Main {
             Configurations configs = new Configurations();
             if (configFilePath.isPresent()) {
                 String filePath = configFilePath.get();
-                switch (extractFileExtension(filePath)) {
+                String fileExtension = extractFileExtension(filePath);
+                switch (fileExtension) {
                     case ".json" -> {
                         JSONConfiguration jsonConfiguration = new JSONConfiguration();
                         jsonConfiguration.read(Files.newInputStream(Path.of(filePath)));
@@ -67,7 +68,8 @@ public class Main {
                         config = yamlConfiguration;
                     }
                     case ".xml" -> config = configs.xml(filePath);
-                    default -> config = configs.properties(filePath);
+                    case ".properties" -> config = configs.properties(filePath);
+                    default -> throw new IllegalArgumentException("Unknown config file format: %s".formatted(fileExtension));
                 }
             } else if (Files.exists(Path.of("configuration.properties"))) {
                 config = configs.properties(new File("configuration.properties"));
