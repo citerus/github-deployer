@@ -7,22 +7,16 @@ import se.citerus.clients.GithubRestClient;
 import se.citerus.config.AppConfig;
 import se.citerus.config.ConfigHandler;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 public class Main {
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws NoSuchAlgorithmException, InvalidKeyException {
+    public static void main(String[] args) {
         Optional<String> configFilePath = args.length > 0 && args[0] != null ? Optional.of(args[0]) : Optional.empty();
-        AppConfig config;
-        if (configFilePath.isPresent()) {
-            config = ConfigHandler.parseConfigFile(configFilePath.get());
-        } else {
-            config = ConfigHandler.parseConfigFile();
-        }
+        AppConfig config = configFilePath.map(ConfigHandler::parseConfigFile)
+                .orElseGet(ConfigHandler::parseConfigFile);
 
         // TODO create deployment pipeline with manual trigger and test it
         var ghClient = new GithubRestClient(config);
