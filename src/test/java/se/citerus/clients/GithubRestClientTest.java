@@ -42,4 +42,25 @@ class GithubRestClientTest {
 
         verify(postRequestedFor(urlPathEqualTo("/repos/testOwner/testRepo/deployments/1/statuses")));
     }
+
+    @Test
+    void shouldNotRaiseExceptionOnHttpError(WireMockRuntimeInfo wm) throws Exception {
+        Configuration config = new MapConfiguration(Map.of(
+                "githubToken", "test",
+                "githubEnvironment", "test",
+                "githubOwner", "testOwner",
+                "githubRepository", "testRepo",
+                "githubSignature", "test",
+                "deploymentScriptPath", "test"
+        ));
+        GithubRestClient githubRestClient = new GithubRestClient(new AppConfig(config));
+        List<Field> fields = ReflectionUtils.findFields(GithubRestClient.class, (f) -> f.getName().equals("host"), ReflectionUtils.HierarchyTraversalMode.TOP_DOWN);
+        fields.getFirst().setAccessible(true);
+        fields.getFirst().set(githubRestClient, "http://localhost:%s".formatted(wm.getHttpPort()));
+        stubFor(post("/repos/testOwner/testRepo/deployments/1/statuses").willReturn(serverError()));
+
+        githubRestClient.updateDeploymentStatus(DeploymentStatus.queued, "test", 1);
+
+        verify(postRequestedFor(urlPathEqualTo("/repos/testOwner/testRepo/deployments/1/statuses")));
+    }
 }
