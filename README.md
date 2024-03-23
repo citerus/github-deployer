@@ -7,7 +7,8 @@ sent to GitHub over the REST API.
 
 ## Configuration
 
-A configuration properties file must be passed to the app on startup as the first program argument. 
+A configuration properties file (yaml, json and xml formats also supported) must be passed to the app on startup as the 
+first program argument. 
 An example file can be found below:
 
 ```properties
@@ -26,3 +27,12 @@ port=7070
 # The absolute file path of the script to run when making deployments.
 deploymentScriptPath=/home/admin/example-deploy-script.sh
 ```
+
+## Project setup
+
+This project uses Java 21 and Maven 3.9.5. For ease of setup, use the included maven wrapper to ensure you use the 
+right maven version. All dependencies are declared in the pom.xml file and will be downloaded on build. 
+
+Build the project using `mvnw compile`. Run tests (included in compile) by using `mvnw test`. Currently, there are no 
+dependencies on external processes, but some tests depend on Wiremock which sets up a temporary HTTP server.
+Running the project will start an HTTP server listening on port 7070 (port configurable through properties file).
