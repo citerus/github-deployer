@@ -36,3 +36,14 @@ right maven version. All dependencies are declared in the pom.xml file and will 
 Build the project using `mvnw compile`. Run tests (included in compile) by using `mvnw test`. Currently, there are no 
 dependencies on external processes, but some tests depend on Wiremock which sets up a temporary HTTP server.
 Running the project will start an HTTP server listening on port 7070 (port configurable through properties file).
+
+## Project scope
+
+This project is intended to be run on Linux/Unix VPS's, such as DigitalOcean droplets, AWS EC2 instances, Glesys 
+servers or similar. That said, it is possible to run this application on a non-virtual server as well.
+
+Currently, Windows is not supported, although since this is a Java project, adding Windows support is feasible. However,
+the core maintainers are not Windows users, so we are open to PR's for this.
+
+Gitlab webhooks will not be supported in this project, although we might fork the project into a gitlab-deployer if 
+the need arises in the future.
