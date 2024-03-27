@@ -13,7 +13,16 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <finalName>${project.artifactId}-${project.version}</finalName>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub citerus Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/citerus/github-deployer</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
@@ -84,6 +93,8 @@
     </dependencies>
 
     <build>
+        <!-- finalName is the file name used for the resulting war-file -->
+        <finalName>${finalName}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
